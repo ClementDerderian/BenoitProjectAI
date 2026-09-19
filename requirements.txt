@@ -1,1 +1,2 @@
-pip install moneymate
+requests>=2.31.0
+ddgs>=9.0.0

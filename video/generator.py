@@ -19,6 +19,7 @@ class VideoGenerator:
         os.makedirs(self.output_dir, exist_ok=True)
 
     def _get_font(self, size):
+
         fonts = [
             "C:/Windows/Fonts/arialbd.ttf",
             "C:/Windows/Fonts/segoeuib.ttf",
@@ -26,12 +27,21 @@ class VideoGenerator:
         ]
 
         for font in fonts:
+
             if os.path.exists(font):
-                return ImageFont.truetype(font, size)
+                return ImageFont.truetype(
+                    font,
+                    size
+                )
 
         return ImageFont.load_default()
 
-    def _create_frame(self, scene, frame_number, total_frames):
+    def _create_frame(
+        self,
+        scene,
+        frame_number,
+        total_frames
+    ):
 
         image = Image.new(
             "RGB",
@@ -41,8 +51,10 @@ class VideoGenerator:
 
         draw = ImageDraw.Draw(image)
 
-        # Petit effet lumineux animé
-        progress = frame_number / max(total_frames - 1, 1)
+        progress = (
+            frame_number
+            / max(total_frames - 1, 1)
+        )
 
         glow_x = int(
             WIDTH * (
@@ -61,9 +73,18 @@ class VideoGenerator:
                 glow_y + 250
             ),
             fill=(
-                min(scene.background[0] + 25, 255),
-                min(scene.background[1] + 25, 255),
-                min(scene.background[2] + 25, 255),
+                min(
+                    scene.background[0] + 25,
+                    255
+                ),
+                min(
+                    scene.background[1] + 25,
+                    255
+                ),
+                min(
+                    scene.background[2] + 25,
+                    255
+                )
             )
         )
 
@@ -71,7 +92,6 @@ class VideoGenerator:
             scene.font_size
         )
 
-        # Découpage du texte
         max_width = WIDTH - 160
 
         words = scene.text.split()
@@ -94,6 +114,7 @@ class VideoGenerator:
             )
 
             if bbox[2] - bbox[0] <= max_width:
+
                 current_line = candidate
 
             else:
@@ -110,7 +131,9 @@ class VideoGenerator:
                 current_line
             )
 
-        line_height = scene.font_size * 1.25
+        line_height = (
+            scene.font_size * 1.25
+        )
 
         total_height = (
             len(lines) * line_height
@@ -121,7 +144,6 @@ class VideoGenerator:
             - total_height / 2
         )
 
-        # Animation d'apparition
         animation = min(
             progress * 5,
             1
@@ -149,7 +171,6 @@ class VideoGenerator:
                 WIDTH - text_width
             ) / 2
 
-            # Ombre
             draw.text(
                 (
                     x + 6,
@@ -160,9 +181,11 @@ class VideoGenerator:
                 fill=(0, 0, 0)
             )
 
-            # Texte
             draw.text(
-                (x, y),
+                (
+                    x,
+                    y
+                ),
                 line,
                 font=font,
                 fill=(255, 255, 255)
@@ -170,7 +193,6 @@ class VideoGenerator:
 
             y += line_height
 
-        # Barre de progression
         bar_x = 60
         bar_y = HEIGHT - 100
         bar_width = WIDTH - 120
@@ -265,7 +287,8 @@ class VideoGenerator:
     def generate(
         self,
         scenes,
-        filename="benoit_video.mp4"
+        filename="benoit_video.mp4",
+        audio_path=None
     ):
 
         output_path = os.path.join(
@@ -277,7 +300,10 @@ class VideoGenerator:
 
             scene_files = []
 
-            # Génération des scènes
+            # -----------------------------
+            # Rendu des scènes
+            # -----------------------------
+
             for i, scene in enumerate(scenes):
 
                 scene_path = os.path.join(
@@ -286,7 +312,8 @@ class VideoGenerator:
                 )
 
                 print(
-                    f"[VIDEO] Rendu scène {i + 1}/{len(scenes)}..."
+                    f"[VIDEO] Rendu scène "
+                    f"{i + 1}/{len(scenes)}..."
                 )
 
                 self._render_scene(
@@ -298,7 +325,10 @@ class VideoGenerator:
                     scene_path
                 )
 
-            # Liste pour FFmpeg
+            # -----------------------------
+            # Fichier concat
+            # -----------------------------
+
             concat_file = os.path.join(
                 temp,
                 "concat.txt"
@@ -321,7 +351,15 @@ class VideoGenerator:
                         f"file '{safe_path}'\n"
                     )
 
-            # Assemblage
+            # -----------------------------
+            # Assemblage vidéo
+            # -----------------------------
+
+            silent_video = os.path.join(
+                temp,
+                "silent.mp4"
+            )
+
             print(
                 "[VIDEO] Assemblage des scènes..."
             )
@@ -342,7 +380,7 @@ class VideoGenerator:
                 "-c",
                 "copy",
 
-                output_path
+                silent_video
             ]
 
             subprocess.run(
@@ -350,8 +388,52 @@ class VideoGenerator:
                 check=True
             )
 
+            # -----------------------------
+            # Ajout audio
+            # -----------------------------
+
+            if audio_path:
+
+                print(
+                    "[VIDEO] Ajout de la voix..."
+                )
+
+                command = [
+                    "ffmpeg",
+                    "-y",
+
+                    "-i",
+                    silent_video,
+
+                    "-i",
+                    audio_path,
+
+                    "-c:v",
+                    "copy",
+
+                    "-c:a",
+                    "aac",
+
+                    "-shortest",
+
+                    output_path
+                ]
+
+                subprocess.run(
+                    command,
+                    check=True
+                )
+
+            else:
+
+                os.replace(
+                    silent_video,
+                    output_path
+                )
+
         print(
-            f"[VIDEO] Vidéo créée : {output_path}"
+            f"[VIDEO] Vidéo créée : "
+            f"{output_path}"
         )
 
         return output_path

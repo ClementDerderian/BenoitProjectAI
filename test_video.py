@@ -1,40 +1,34 @@
-from video.generator import VideoGenerator
-from video.scenes import Scene
+from video.service import VideoService
 
 
-generator = VideoGenerator()
+service = VideoService()
 
 
-scenes = [
+result = service.create_video(
+    title="3 idées de business avec l'IA",
+    
+    script="""
+    Voici trois idées de business que tu peux lancer
+    avec l'intelligence artificielle.
 
-    Scene(
-        duration=3,
-        text="BENOÎT",
-        background=(20, 30, 100),
-        font_size=140
-    ),
+    Première idée : créer des vidéos automatiquement
+    pour les réseaux sociaux.
 
-    Scene(
-        duration=4,
-        text="Voici notre moteur vidéo",
-        background=(100, 20, 30),
-        font_size=90
-    ),
+    Deuxième idée : créer des outils spécialisés
+    pour les créateurs de contenu.
 
-    Scene(
-        duration=3,
-        text="La prochaine étape : créer de vraies vidéos TikTok",
-        background=(20, 100, 50),
-        font_size=75
-    ),
+    Troisième idée : automatiser des tâches répétitives
+    pour les petites entreprises.
 
-]
+    Le plus intéressant est de commencer petit,
+    tester rapidement,
+    puis automatiser ce qui fonctionne.
+    """,
 
-
-video = generator.generate(
-    scenes,
-    "test_video.mp4"
+    filename="premiere_video_benoit.mp4"
 )
 
+
 print()
-print("VIDEO :", video)
+print("========== RESULTAT ==========")
+print(result)
